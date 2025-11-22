@@ -22,9 +22,28 @@ def is_diagonally_dominant(A: np.ndarray | sp.sparse.csc_array) -> bool | None:
         (bool): `True`, jeśli macierz jest diagonalnie zdominowana, 
             w przeciwnym wypadku `False`.
         Jeżeli dane wejściowe są niepoprawne funkcja zwraca `None`.
-    """
-    pass
+    """ 
+    if A is None:
+        return None
 
+    if not isinstance(A, (np.ndarray, sp.sparse.sparray)):
+        return None
+
+    if A.ndim != 2 or A.shape[0] != A.shape[1]:
+        return None
+
+    if sp.sparse.issparse(A):
+        A = A.toarray()
+
+    abs_A = np.abs(A)
+    diag = np.abs(np.diagonal(A))
+    row_sums = np.sum(abs_A, axis=1)
+    off_diag_sums = row_sums - diag
+
+    if np.all(diag > off_diag_sums):
+        return True
+    else:
+        return False
 
 def residual_norm(A: np.ndarray, x: np.ndarray, b: np.ndarray) -> float | None:
     """Funkcja obliczająca normę residuum dla równania postaci: 
@@ -40,4 +59,22 @@ def residual_norm(A: np.ndarray, x: np.ndarray, b: np.ndarray) -> float | None:
         (float): Wartość normy residuum dla podanych parametrów.
         Jeżeli dane wejściowe są niepoprawne funkcja zwraca `None`.
     """
-    pass
+    if A is None or x is None or b is None:
+        return None
+
+    if not isinstance(A, np.ndarray) or not isinstance(x, np.ndarray) or not isinstance(b, np.ndarray):
+        return None
+
+    if A.ndim != 2 or x.ndim != 1 or b.ndim != 1:
+        return None
+
+    m, n = A.shape
+    if x.shape[0] != n:
+        return None
+    if b.shape[0] != m:
+        return None
+
+    r = A @ x - b
+
+    return float(np.linalg.norm(r))
+    
